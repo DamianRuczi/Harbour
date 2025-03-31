@@ -2,7 +2,14 @@
 
     public abstract class Container
     {
-        public string SerialNumber { get; private set; }
+        
+        private static int _serialCounter = 1;
+        private string _serialNumber;
+        public string SerialNumber
+        {
+            get => _serialNumber;
+            private set => _serialNumber = $"KON-{value}-{_serialCounter++}";
+        }
         public double CargoMass { get; protected set; }
         public double MaxCapacity { get; private set; }
         public double OwnWeight { get; private set; }
@@ -11,7 +18,7 @@
 
         protected Container(double maxCapacity, double ownWeight, int height, int depth, string typeIdentifier)
         {
-            SerialNumber = GenerateSerialNumber(typeIdentifier);
+            SerialNumber = typeIdentifier;
             MaxCapacity = maxCapacity;
             OwnWeight = ownWeight;
             Height = height;
@@ -19,17 +26,13 @@
             CargoMass = 0;
         }
 
-        private static int _serialCounter = 1;
-        private string GenerateSerialNumber(string typeIdentifier)
-        {
-            return $"KON-{typeIdentifier}-{_serialCounter++}";
-        }
 
         public virtual void LoadCargo(double mass)
         {
-            if (mass > MaxCapacity)
-                throw new OverfillException($"Cargo mass {mass} kg exceeds max capacity {MaxCapacity} kg.");
-            CargoMass = mass;
+            double predictedCapacity = CargoMass + mass;
+            if (predictedCapacity > MaxCapacity)
+                throw new OverfillException($"Cargo mass {mass} kg exceeds max capacity {predictedCapacity} kg.");
+            CargoMass += mass;
         }
 
         public virtual void UnloadCargo()
